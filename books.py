@@ -1,12 +1,12 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Body
 
 app = FastAPI()
 
 books = [
-    {"id":1,"title": "Title One", "author":"One", "category":"Category One"},
-    {"id":2,"title": "Title Two", "author":"Two", "category":"Category Two"},
-    {"id":3,"title": "Title Three", "author":"Three", "category":"Category Three"},
-    {"id":4,"title": "Title Four", "author":"Four", "category":"Category Four"}
+    {"id":1,"title": "Title One", "author":"Author One", "category":"Math"},
+    {"id":2,"title": "Title Two", "author":"Author Two", "category":"Physics"},
+    {"id":3,"title": "Title Three", "author":"Author Two", "category":"Math"},
+    {"id":4,"title": "Title Four", "author":"Author Four", "category":"History"}
 ]
 
 ## Practice overloading
@@ -67,9 +67,16 @@ async def get_book_by_category(category:str):
         return {"Message" : "The required book is not available"}
     return required_book
 
-@app.get("/books/")
-async def get_book_by_author_query(author:str):
+@app.get("/books/{author}/")
+async def get_book_by_author_query(author:str, category: str):
     for book in books:
-        if book['author'].casefold() == author.casefold():
+        if book['author'].casefold() == author.casefold() and \
+            book['category'].casefold()==category.casefold():
             return book
     return {"Message":"Book doesn't exist"}
+
+## POST Request: Create
+@app.post("/books/create_book")
+async def create_book(newbook = Body()):    ## from fastapi import Body
+    books.append(newbook)
+## Get method cannot have a body. Post is allowed to have a body.
