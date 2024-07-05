@@ -67,16 +67,52 @@ async def get_book_by_category(category:str):
         return {"Message" : "The required book is not available"}
     return required_book
 
-@app.get("/books/{author}/")
-async def get_book_by_author_query(author:str, category: str):
+
+@app.get("/books/by_author/{author}")
+                                                ## optional query parameter
+async def get_book_by_author_query(author:str, category: str | None = None):
+    local = []
     for book in books:
-        if book['author'].casefold() == author.casefold() and \
-            book['category'].casefold()==category.casefold():
-            return book
+        if book['author'].casefold() == author.casefold():
+            if category!=None:
+                if book['category'].casefold() == category.casefold():
+                    local.append(book)
+            else:
+                local.append(book)
+    if local != []:
+        return local
     return {"Message":"Book doesn't exist"}
+
+
+
+# @app.get("/books/{author}/")
+# async def get_book_by_author_query(author:str, category: str):
+#     local = []
+#     for book in books:
+#         if book['author'].casefold() == author.casefold() and \
+#             book['category'].casefold()==category.casefold():
+#             local.append(book)
+#     if local != []:
+#         return local
+#     return {"Message":"Book doesn't exist"}
 
 ## POST Request: Create
 @app.post("/books/create_book")
 async def create_book(newbook = Body()):    ## from fastapi import Body
     books.append(newbook)
 ## Get method cannot have a body. Post is allowed to have a body.
+
+@app.put("/books/update_book")
+async def update_book(update = Body()):
+    for i in range(len(books)):
+        if books[i].get('title').casefold() == update.get('title').casefold():
+            books[i] = update
+            break
+
+@app.delete("/books/delete_book/{book_id}")
+async def delete_book(book_id:int):
+    for i,b in enumerate(books):
+        if b.get('id') == book_id:
+            books.pop(i)
+            return {"Message":"Book Deleted"}
+    return {"Message":f"Book with id {book_id} doesn't exist"}
